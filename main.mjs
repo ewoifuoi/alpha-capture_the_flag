@@ -1,4 +1,4 @@
-import { getObjectsByPrototype } from 'game/utils';
+import { getObjectsByPrototype, getRange } from 'game/utils';
 import { Creep, StructureTower } from 'game/prototypes';
 import { ATTACK, ERR_NOT_IN_RANGE, HEAL, RANGED_ATTACK, RESOURCE_ENERGY } from 'game/constants';
 // @ts-ignore
@@ -80,8 +80,32 @@ class Group {
 
 
     battle() {
-        
+        for(var c of this.healers) {
+            if(c.heal(this.killers[0])) {
+                c.moveTo(this.killers[0]);
+            }
+        }
     }
+
+    enemy_discovered() {
+        var enemies = getObjectsByPrototype(Creep).filter(i=>!i.my);
+        var minn = 0xffff;
+        for(var e of enemies) {
+            var temp = getRange(this.killers[0],e);
+            if(temp < minn) minn = temp;
+        }
+        if(minn <= 5) return true;
+        else return false;
+    }
+
+    attack_mode() {
+        if(this.enemy_discovered()){
+            this.battle();
+        }
+        else this.moveTo(flag);
+
+    }
+
 }
 
 
@@ -108,11 +132,11 @@ var f = 0;
 var group1 = new Group();
 var group2 = new Group();
 
+
+
 export function loop() {
     // Your code goes here
-
-    group1.moveTo(flag);
-    group2.moveTo(flag);
+    group1.attack_mode();
     
     
     for(var t of towers) {
