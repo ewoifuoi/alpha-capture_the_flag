@@ -28,7 +28,7 @@ class Group {
     constructor() {
         var count = 0;var cnt = 0;
         for(var c of creeps) {
-            if(c.isgrouped == false && c.creep.body.some(b=>b.type == ATTACK)) {
+            if(c && c.isgrouped == false && c.creep.body.some(b=>b.type == ATTACK)) {
                 this.killers.push(c.creep);
                 this.members.push(c);
                 c.isgrouped = true;c.id = ++cnt;
@@ -38,7 +38,7 @@ class Group {
         }
         var count = 0;
         for(var c of creeps) {
-            if(c.isgrouped == false && c.creep.body.some(b=>b.type == HEAL)) {
+            if(c && c.isgrouped == false && c.creep.body.some(b=>b.type == HEAL)) {
                 this.healers.push(c.creep);
                 this.members.push(c);
                 c.isgrouped = true;c.id = ++cnt;
@@ -48,7 +48,7 @@ class Group {
         }
         var count = 0;
         for(var c of creeps) {
-            if(c.isgrouped == false && c.creep.body.some(b=>b.type == RANGED_ATTACK)) {
+            if(c && c.isgrouped == false && c.creep.body.some(b=>b.type == RANGED_ATTACK)) {
                 this.range_attackers.push(c.creep);
                 this.members.push(c);
                 c.isgrouped = true;c.id = ++cnt;
@@ -67,7 +67,7 @@ class Group {
     moveTo(flag) {
         var temp;
         for(var c of this.members) {
-            if(c.creep.body.some(b=>b.type == ATTACK)) {
+            if(c!=null && c.creep.body.some(b=>b.type == ATTACK)) {
                 c.creep.moveTo(flag);
                 temp = c;
             }
@@ -94,7 +94,7 @@ class Group {
             else ready = true;
         }
         for(var c of this.killers) {
-            if(ready && c.attack(target) == ERR_NOT_IN_RANGE) {
+            if(c && ready && c.attack(target) == ERR_NOT_IN_RANGE) {
                 c.moveTo(target);
             }
         }
@@ -158,8 +158,8 @@ var group2 = new Group();
 
 export function loop() {
     // Your code goes here
-    group1.attack_mode();
-    group2.attack_mode();
+    if(group1)group1.attack_mode();
+    if(group2)group2.attack_mode();
     
     
     for(var t of towers) {
