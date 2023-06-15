@@ -23,11 +23,13 @@ class Group {
     healers = new Array();
     range_attackers = new Array();
     members = new Array();
+    isbattling;
+
     constructor() {
         var count = 0;var cnt = 0;
         for(var c of creeps) {
             if(c.isgrouped == false && c.creep.body.some(b=>b.type == ATTACK)) {
-                this.killers.push(c);
+                this.killers.push(c.creep);
                 this.members.push(c);
                 c.isgrouped = true;c.id = ++cnt;
                 count++;
@@ -37,7 +39,7 @@ class Group {
         var count = 0;
         for(var c of creeps) {
             if(c.isgrouped == false && c.creep.body.some(b=>b.type == HEAL)) {
-                this.healers.push(c);
+                this.healers.push(c.creep);
                 this.members.push(c);
                 c.isgrouped = true;c.id = ++cnt;
                 count++;
@@ -47,7 +49,7 @@ class Group {
         var count = 0;
         for(var c of creeps) {
             if(c.isgrouped == false && c.creep.body.some(b=>b.type == RANGED_ATTACK)) {
-                this.range_attackers.push(c);
+                this.range_attackers.push(c.creep);
                 this.members.push(c);
                 c.isgrouped = true;c.id = ++cnt;
                 count++;
@@ -75,6 +77,11 @@ class Group {
             }
         }
     }
+
+
+    battle() {
+        
+    }
 }
 
 
@@ -83,7 +90,6 @@ function GetCreeps() {
     var creeps = new Array();
     var cs = getObjectsByPrototype(Creep).filter(i=>i.my);
     for(var c of cs) {
-        
         var newCreep = new myCreep(c,false);
         creeps.push(newCreep);
     }
