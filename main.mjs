@@ -79,9 +79,27 @@ class Group {
     }
 
 
-    battle() {
+    battle(target) {
+        var ready = false;
         for(var c of this.healers) {
-            if(c.heal(this.killers[0])) {
+            for(var cc of this.members) {
+                if(cc.creep.hits < cc.creep.hitsMax) {
+                    c.rangedHeal(cc);
+                }
+            }
+            if(c.heal(this.killers[0]) == ERR_NOT_IN_RANGE) {
+                c.moveTo(this.killers[0]);
+                ready = false;
+            }
+            else ready = true;
+        }
+        for(var c of this.killers) {
+            if(ready && c.attack(target) == ERR_NOT_IN_RANGE) {
+                c.moveTo(target);
+            }
+        }
+        for(var c of this.range_attackers) {
+            if(c.rangedAttack(target) == ERR_NOT_IN_RANGE) {
                 c.moveTo(this.killers[0]);
             }
         }
@@ -90,17 +108,21 @@ class Group {
     enemy_discovered() {
         var enemies = getObjectsByPrototype(Creep).filter(i=>!i.my);
         var minn = 0xffff;
+        var res;
         for(var e of enemies) {
             var temp = getRange(this.killers[0],e);
-            if(temp < minn) minn = temp;
+            if(temp < minn) {
+                minn = temp;
+                res = e;
+            }
         }
-        if(minn <= 5) return true;
-        else return false;
+        if(minn <= 20) return res;
     }
 
     attack_mode() {
-        if(this.enemy_discovered()){
-            this.battle();
+        var target;
+        if(target = this.enemy_discovered()){
+            this.battle(target);
         }
         else this.moveTo(flag);
 
@@ -137,6 +159,7 @@ var group2 = new Group();
 export function loop() {
     // Your code goes here
     group1.attack_mode();
+    group2.attack_mode();
     
     
     for(var t of towers) {
