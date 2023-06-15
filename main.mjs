@@ -10,6 +10,7 @@ import {} from 'game';
 class myCreep {
     creep ;
     isgrouped ;
+    id;
     constructor(creep , isgrouped ) {
         this.creep = creep;
         this.isgrouped = isgrouped;
@@ -23,12 +24,12 @@ class Group {
     range_attackers = new Array();
     members = new Array();
     constructor() {
-        var count = 0;
+        var count = 0;var cnt = 0;
         for(var c of creeps) {
             if(c.isgrouped == false && c.creep.body.some(b=>b.type == ATTACK)) {
-                this.killers.push(c.creep);
-                this.members.push(c.creep);
-                c.isgrouped = true;
+                this.killers.push(c);
+                this.members.push(c);
+                c.isgrouped = true;c.id = ++cnt;
                 count++;
             }
             if(count >= 1) break;
@@ -36,9 +37,9 @@ class Group {
         var count = 0;
         for(var c of creeps) {
             if(c.isgrouped == false && c.creep.body.some(b=>b.type == HEAL)) {
-                this.healers.push(c.creep);
-                this.members.push(c.creep);
-                c.isgrouped = true;
+                this.healers.push(c);
+                this.members.push(c);
+                c.isgrouped = true;c.id = ++cnt;
                 count++;
             }
             if(count >= 3) break;
@@ -46,9 +47,9 @@ class Group {
         var count = 0;
         for(var c of creeps) {
             if(c.isgrouped == false && c.creep.body.some(b=>b.type == RANGED_ATTACK)) {
-                this.range_attackers.push(c.creep);
-                this.members.push(c.creep);
-                c.isgrouped = true;
+                this.range_attackers.push(c);
+                this.members.push(c);
+                c.isgrouped = true;c.id = ++cnt;
                 count++;
             }
             if(count >= 3) break;
@@ -64,12 +65,12 @@ class Group {
     moveTo(flag) {
         var temp;
         for(var c of this.members) {
-            if(c.body.some(b=>b.type == ATTACK)) {
-                c.moveTo(flag);
+            if(c.creep.body.some(b=>b.type == ATTACK)) {
+                c.creep.moveTo(flag);
                 temp = c;
             }
             else {
-                console.log(c.moveTo(temp));
+                c.creep.moveTo(temp.creep);
                 temp = c;
             }
         }
@@ -98,15 +99,14 @@ const creeps = GetCreeps();
 var f = 0;
 
 
-
+var group1 = new Group();
+var group2 = new Group();
 
 export function loop() {
     // Your code goes here
 
-    var group1 = new Group();
-    var group2 = new Group();
-
     group1.moveTo(flag);
+    group2.moveTo(flag);
     
     
     for(var t of towers) {
