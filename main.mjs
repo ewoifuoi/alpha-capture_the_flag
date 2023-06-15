@@ -17,39 +17,62 @@ class myCreep {
     
 }
 
-class group {
+class Group {
     killers = new Array();
     healers = new Array();
     range_attackers = new Array();
+    members = new Array();
     constructor() {
         var count = 0;
         for(var c of creeps) {
             if(c.isgrouped == false && c.creep.body.some(b=>b.type == ATTACK)) {
-                this.killers.push(c);
+                this.killers.push(c.creep);
+                this.members.push(c.creep);
                 c.isgrouped = true;
+                count++;
             }
             if(count >= 1) break;
         }
         var count = 0;
         for(var c of creeps) {
             if(c.isgrouped == false && c.creep.body.some(b=>b.type == HEAL)) {
-                this.healers.push(c);
+                this.healers.push(c.creep);
+                this.members.push(c.creep);
                 c.isgrouped = true;
+                count++;
             }
             if(count >= 3) break;
         }
         var count = 0;
         for(var c of creeps) {
             if(c.isgrouped == false && c.creep.body.some(b=>b.type == RANGED_ATTACK)) {
-                this.range_attackers.push(c);
+                this.range_attackers.push(c.creep);
+                this.members.push(c.creep);
                 c.isgrouped = true;
+                count++;
             }
             if(count >= 3) break;
         }
     }
+
+    testMembers() {
+        for(var c of this.members) {
+            console.log(c.body);
+        }
+    }
     
     moveTo(flag) {
-        
+        var temp;
+        for(var c of this.members) {
+            if(c.body.some(b=>b.type == ATTACK)) {
+                c.moveTo(flag);
+                temp = c;
+            }
+            else {
+                console.log(c.moveTo(temp));
+                temp = c;
+            }
+        }
     }
 }
 
@@ -59,17 +82,11 @@ function GetCreeps() {
     var creeps = new Array();
     var cs = getObjectsByPrototype(Creep).filter(i=>i.my);
     for(var c of cs) {
+        
         var newCreep = new myCreep(c,false);
         creeps.push(newCreep);
     }
     return creeps;
-}
-
-function make_group(creeps) {
-    var soilders
-    for(var c of creeps) {
-
-    }
 }
 
 
@@ -86,46 +103,12 @@ var f = 0;
 export function loop() {
     // Your code goes here
 
-    var soliders = getObjectsByPrototype(Creep).filter(i=>i.my && (i.body.some(b=>b.type==ATTACK)));
-    var guards = getObjectsByPrototype(Creep).filter(i=>i.my && (i.body.some(b=>b.type == RANGED_ATTACK)));
-    var healers = getObjectsByPrototype(Creep).filter(i=>i.my && (i.body.some(b=>b.type==HEAL)));
+    var group1 = new Group();
+    var group2 = new Group();
 
-    for(var c of soliders) {
-        var es = getObjectsByPrototype(Creep).find(i=>!i.my);
-        if(c.attack(es) == ERR_NOT_IN_RANGE) {
-            c.moveTo(es);
-        }
-    }
-
-    var leader;
-    for(var c of healers) {
-        if(c == healers[0]) {
-            leader = c;
-            c.moveTo(flag);
-        }
-        else {
-            if(leader.hits < leader.hitsMax) {
-                if(c.heal(leader) == ERR_NOT_IN_RANGE) {
-                    
-                    c.moveTo(leader);
-                }
-            }
-            else {
-                c.moveTo(leader);
-            }
-        }
-    }
-
-    for(var c of guards) {
-        var es = getObjectsByPrototype(Creep).find(i=>!i.my);
-        if(!f && c.getRangeTo(home) != 0)c.moveTo(home);
-        else {
-            f = 1;
-            c.rangedAttack(es);
-        }
-    }
-
-
+    group1.moveTo(flag);
+    
+    
     for(var t of towers) {
         var target = getObjectsByPrototype(Creep).find(i=>!i.my);
         if(t.store[RESOURCE_ENERGY] > 30) t.attack(target);
