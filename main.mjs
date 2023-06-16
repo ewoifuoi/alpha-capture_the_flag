@@ -7,6 +7,64 @@ import { Flag } from 'arena/season_alpha/capture_the_flag/basic';
 
 import {} from 'game';
 
+
+class creep_info {
+    constructor(creep) {
+        this.id = creep.id.toString();
+        if(creep.body.some(b=>b.type == ATTACK)) this.type = "近战";
+        if(creep.body.some(b=>b.type == HEAL)) this.type = "医疗";
+        if(creep.body.some(b=>b.type == RANGED_ATTACK)) this.type = "远程";
+        if(creep.exists){
+            this.isAttacked = "    ";
+            this.status = "初始化";
+            this.isDead = "ALIVE";
+            this.hits = creep.hits.toString();
+        }
+        else {
+            this.isAttacked = "    ";
+            this.status = "      ";
+            this.isDead = "DEAD";
+            this.hits = creep.hits.toString();
+        }
+    }
+    id;
+    type;
+    hits;
+    isAttacked;
+    status;
+    isDead;
+    get_info() {
+        var text = this.id.toString()+"  "+this.type+"  "+this.hits+"  "+this.status+"  "+this.isDead+"  "+this.isAttacked;
+        return text;
+    }
+    update(creep) {
+        if(creep.hits < this.hits) {
+            this.isAttacked = "受击";
+        }
+        else {
+            this.isAttacked = "    ";
+        }
+
+        this.id = creep.id.toString();
+        if(creep.body.some(b=>b.type == ATTACK)) this.type = "近战";
+        if(creep.body.some(b=>b.type == HEAL)) this.type = "医疗";
+        if(creep.body.some(b=>b.type == RANGED_ATTACK)) this.type = "远程";
+        if(creep.exists){
+            this.isAttacked = "    ";
+            this.status = "初始化";
+            this.isDead = "ALIVE";
+            this.hits = creep.hits.toString();
+        }
+        else {
+            this.isAttacked = "    ";
+            this.status = "      ";
+            this.isDead = "DEAD";
+            this.hits = creep.hits.toString();
+        }
+    }
+
+}
+
 class myCreep {
     creep ;
     isgrouped ;
@@ -83,12 +141,19 @@ class Group {
     battle(target) {
         var ready = false;
         for(var c of this.healers) {
+            var minn = 0xffff;var temp;
             for(var cc of this.members) {
-                if(cc.creep.hits < cc.creep.hitsMax) {
-                    c.rangedHeal(cc);
+                if(cc.creep.hits < minn) {
+                    minn = cc.creep.hits;
+                    temp = cc.creep;
                 }
             }
-            if(c.heal(this.killers[0]) == ERR_NOT_IN_RANGE) {
+            if(minn < c.hitsMax) {
+                if(c.rangedHeal(temp) == ERR_NOT_IN_RANGE) {
+                    c.moveTo(temp);
+                }
+            }
+            if(getRange(this.killers[0], c) > 2) {
                 c.moveTo(this.killers[0]);
                 ready = false;
             }
@@ -117,7 +182,7 @@ class Group {
                 res = e;
             }
         }
-        if(minn <= 20) return res;
+        if(minn <= 5) return res;
     }
 
     attack_mode() {
@@ -143,6 +208,28 @@ function GetCreeps() {
     return creeps;
 }
 
+var infos = new Array();
+function panel() {
+    var members = getObjectsByPrototype(Creep).filter(i=>i.my);
+    
+    for(var c of members) {
+        var m = new creep_info(c);
+        infos.push(m);
+    }
+    
+    var temp = new Array(5);var count = 0;
+    for(var i = 0; i < infos.length; i++) {
+        if(count == 5) count = 0;
+        
+        temp[count] += infos[i].get_info();
+        temp[count++] += "\t";
+    }
+    for(var t of temp) {
+        console.log(t,"\n");
+    }
+    infos = infos.slice(0,0);
+}
+
 
 
 const towers = getObjectsByPrototype(StructureTower).filter(i=>i.my);
@@ -161,7 +248,10 @@ export function loop() {
     // Your code goes here
     if(group1)group1.attack_mode();
     if(group2)group2.attack_mode();
+
+    panel();
     
+
     
     for(var t of towers) {
         var target = getObjectsByPrototype(Creep).find(i=>!i.my);
