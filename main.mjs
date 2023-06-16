@@ -67,12 +67,13 @@ class Group {
     moveTo(flag) {
         var temp;
         for(var c of this.members) {
-            if(c!=null && c.creep.body.some(b=>b.type == ATTACK)) {
+            if(c.creep.body && c.creep.body.some(b=>b.type == ATTACK)) {
                 c.creep.moveTo(flag);
                 temp = c;
             }
             else {
-                c.creep.moveTo(temp.creep);
+                if(c.creep.body)c.creep.moveTo(temp.creep);
+                
                 temp = c;
             }
         }
